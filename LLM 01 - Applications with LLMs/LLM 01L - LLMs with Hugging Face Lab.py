@@ -72,13 +72,14 @@ display(xsum_sample.to_pandas())
 
 # COMMAND ----------
 
-# TODO
-
 # Constructor a summarization pipeline
-summarizer = <FILL_IN>
+summarizer = pipeline(
+    task="summarization",
+    model="t5-base"
+)
 
 # Apply the pipeline to the batch of articles in `xsum_sample`
-summarization_results = <FILL_IN>
+summarization_results = summarizer(xsum_sample["document"])
 summarization_results
 
 # COMMAND ----------
@@ -135,7 +136,14 @@ display(jpn_sample.to_pandas())
 
 # COMMAND ----------
 
-# TODO
+# Construct a pipeline for translating Japanese to English.
+translation_pipeline = pipeline(
+    task="translation",
+    model="Helsinki-NLP/opus-mt-en-jap"
+)
+
+# Apply your pipeline on the sample of Japanese text in: jpn_sample["Japanese"]
+translation_results = translation_pipeline(jpn_sample["Japanese"])
 
 # Construct a pipeline for translating Japanese to English.
 translation_pipeline = <FILL_IN>
@@ -228,15 +236,18 @@ eos_token_id = few_shot_pipeline.tokenizer.encode("###")[0]
 # Fill in this template.
 
 prompt =\
-"""<High-level instruction about the task>:
+"""For each of state name, identify its capital:
 
-[<input_label>]: "<input text>"
-[<output_label>]: "<output_text>"
+[<input_label>]: "Georgia"
+[<output_label>]: "Atlanta"
 ###
-[<input_label>]: "<input text>"
-[<output_label>]: "<output_text>"
+[<input_label>]: "california"
+[<output_label>]: "Sacramento"
 ###
-[<input_label>]: "<input text>"
+[<input_label>]: "Florida"
+[<output_label>]: "Tallahassee"
+###
+[<input_label>]: "Washington"
 [<output_label>]:"""
 
 # COMMAND ----------
@@ -354,17 +365,17 @@ display_summaries(decoded_summaries)
 # COMMAND ----------
 
 # Options for calling the tokenizer (lots to see here)
-# help(tokenizer.__call__)
+help(tokenizer.__call__)
 
 # COMMAND ----------
 
 # Options for invoking the model (lots to see here)
-# help(model.generate)
+help(model.generate)
 
 # COMMAND ----------
 
 # Options for calling the tokenizer for decoding (not much to see here)
-# help(tokenizer.batch_decode)
+help(tokenizer.batch_decode)
 
 # COMMAND ----------
 
