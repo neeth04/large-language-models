@@ -85,8 +85,7 @@ chroma_client = chromadb.Client(
 
 # COMMAND ----------
 
-# TODO
-collection_name = "<FILL_IN>"
+collection_name = "summit_2023"
 
 # If you have created the collection before, you need to delete the collection first
 if len(chroma_client.list_collections()) > 0 and collection_name in [chroma_client.list_collections()[0].name]:
@@ -110,10 +109,9 @@ dbTestQuestion2_1(collection_name)
 
 # COMMAND ----------
 
-# TODO
 talks_collection.add(
-    documents=<FILL_IN>,
-    ids=<FILL_IN>
+    documents=["This is a session1", "This is another session2"],
+    ids=["id1", "id2"]
 )
 
 # COMMAND ----------
@@ -131,12 +129,11 @@ dbTestQuestion2_2(talks_collection)
 
 # COMMAND ----------
 
-# TODO
 import json
 
 results = talks_collection.query(
-    query_texts=<FILL_IN>,
-    n_results=<FILL_IN>
+    query_texts=["This is a query session"],
+    n_results=2
 )
 
 print(json.dumps(results, indent=4))
@@ -156,16 +153,15 @@ dbTestQuestion2_3(results)
 
 # COMMAND ----------
 
-# TODO
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 # Pick a model from HuggingFace that can generate text
-model_id = "<FILL_IN>"
+model_id = "databricks/dolly-v2-3b"
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 lm_model = AutoModelForCausalLM.from_pretrained(model_id)
 
 pipe = pipeline(
-    "<FILL_IN>", model=lm_model, tokenizer=tokenizer, max_new_tokens=512, device_map="auto", handle_long_generation="hole"
+    "task="text-generation"", model=lm_model, tokenizer=tokenizer, max_new_tokens=512, device_map="auto", handle_long_generation="hole"
 )
 
 # COMMAND ----------
@@ -183,18 +179,25 @@ dbTestQuestion2_4(pipe)
 
 # COMMAND ----------
 
-# TODO
 # Come up with a question that you need the LLM assistant to help you with
 # A sample question is "Help me find sessions related to XYZ"
-question = "<FILL_IN>"
+question = "Help me find sessions related Apache Spark"
 
 # Provide all returned similar documents from the cell above below
-context = <FILL_IN>
+context = "Title: Nebula: The Journey of Scaling Instacart’s Data Pipelines with Apache Spark™ and Lakehouse Abstract:  Instacart has gone through immense growth during the pandemic and the trend continues. Instacart ads is no exception in this growth story. We have launched many new product lines including display and video ads covering the full advertising funnel to address the increasing demand of our retail partners. We have built advanced models to auto-suggest optimal bidding to increase the ROI for our CPG partners. Advertisers’ trust is the utmost priority and thus the quest to build a top-class ads measurement platform."
 
 # Feel free to be creative how you construct the prompt. You can use the demo notebook as a jumpstart reference.
 # You can also provide more requirements in the text how you want the answers to look like.
 # Example requirement: "Recommend top-5 relevant sessions for me to attend."
-prompt_template = <FILL_IN>
+prompt_template = """Answer the question based on the context below. If the
+question cannot be answered using the information provided answer
+with "I don't know".
+
+context: Title: Nebula: The Journey of Scaling Instacart’s Data Pipelines with Apache Spark™ and Lakehouse Abstract:  Instacart has gone through immense growth during the pandemic and the trend continues. Instacart ads is no exception in this growth story. We have launched many new product lines including display and video ads covering the full advertising funnel to address the increasing demand of our retail partners. We have built advanced models to auto-suggest optimal bidding to increase the ROI for our CPG partners. Advertisers’ trust is the utmost priority and thus the quest to build a top-class ads measurement platform.
+
+question: Help me find sessions related Apache Spark
+
+Answer: """
 
 # COMMAND ----------
 
@@ -213,8 +216,7 @@ dbTestQuestion2_5(question, context, prompt_template)
 
 # COMMAND ----------
 
-# TODO
-lm_response = pipe(<FILL_IN>)
+lm_response = pipe("Help me find sessions related Apache Spark")
 print(lm_response[0]["generated_text"])
 
 # COMMAND ----------
