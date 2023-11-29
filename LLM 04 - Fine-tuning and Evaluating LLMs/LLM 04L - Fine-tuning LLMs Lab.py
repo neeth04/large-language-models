@@ -90,8 +90,7 @@ from nltk.tokenize import sent_tokenize
 
 # COMMAND ----------
 
-# TODO
-ds = <FILL_IN>
+ds = load_dataset("databricks/databricks-dolly-15k")
 
 # COMMAND ----------
 
@@ -110,8 +109,7 @@ dbTestQuestion4_1(ds)
 
 # COMMAND ----------
 
-# TODO
-model_checkpoint = <FILL_IN>
+model_checkpoint = "EleutherAI/pythia-70m-deduped"
 
 # COMMAND ----------
 
@@ -130,9 +128,9 @@ dbTestQuestion4_2(model_checkpoint)
 
 # COMMAND ----------
 
-# TODO
 # load the tokenizer that was used for the model
-tokenizer = <FILL_IN>
+tokenizer = AutoTokenizer.from_pretrained(
+    model_checkpoint, cache_dir=DA.paths.datasets)
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.add_special_tokens(
     {"additional_special_tokens": ["### End", "### Instruction:", "### Response:\n"]}
@@ -189,8 +187,7 @@ def tokenize(x: dict, max_length: int = 1024) -> dict:
 
 # COMMAND ----------
 
-# TODO
-tokenized_dataset = <FILL_IN>
+tokenized_dataset = ds.map(tokenize, remove_columns=remove_columns)
 
 # COMMAND ----------
 
@@ -213,10 +210,15 @@ dbTestQuestion4_4(tokenized_dataset)
 
 # COMMAND ----------
 
-# TODO
 checkpoint_name = "test-trainer-lab"
 local_checkpoint_path = os.path.join(local_training_root, checkpoint_name)
-training_args = <FILL_IN>
+training_args = TrainingArguments(
+    local_checkpoint_path,
+    num_train_epochs=10,  # default number of epochs to train is 3
+    per_device_train_batch_size=8,
+    optim="adamw_torch",
+    report_to=["tensorboard"],
+)
 
 # COMMAND ----------
 
@@ -236,9 +238,10 @@ dbTestQuestion4_5(training_args)
 
 # COMMAND ----------
 
-# TODO
 # load the pre-trained model
-model = <FILL_IN>
+model = AutoModelForCausalLM.from_pretrained(
+    model_checkpoint, cache_dir=DA.paths.datasets
+)
 
 # COMMAND ----------
 
@@ -257,15 +260,21 @@ dbTestQuestion4_6(model)
 
 # COMMAND ----------
 
-# TODO
 # used to assist the trainer in batching the data
 TRAINING_SIZE=6000
 SEED=42
 data_collator = DataCollatorForLanguageModeling(
     tokenizer=tokenizer, mlm=False, return_tensors="pt", pad_to_multiple_of=8
 )
-split_dataset = <FILL_IN>
-trainer = <FILL_IN>
+split_dataset = tokenized_dataset['train'].train_test_split(train_size=TRAINING_SIZE, seed=SEED)
+trainer = Trainer(
+    model,
+    training_args,
+    train_dataset=split_dataset['train'],
+    eval_dataset=split_dataset["test"],
+    tokenizer=tokenizer,
+    data_collator=data_collator,
+)
 
 # COMMAND ----------
 
@@ -300,9 +309,8 @@ tensorboard_display_dir = f"{local_checkpoint_path}/runs"
 
 # COMMAND ----------
 
-# TODO
 # invoke training - note this will take approx. 30min
-<FILL_IN>
+trainer.train()
 
 # save model to the local checkpoint
 trainer.save_model()
@@ -430,9 +438,8 @@ def compute_rouge_score(generated, reference):
 
 # COMMAND ----------
 
-# TODO
-rouge_scores = <FILL_IN>
-display(<FILL_IN>)
+rouge_scores = compute_rouge_score(generated_responses, ground_truth_responses
+display(rouge_scores)
 
 # COMMAND ----------
 
